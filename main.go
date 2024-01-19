@@ -25,8 +25,6 @@ func main() {
 		config.Config.PgCfg.Database,
 	)
 
-	fmt.Print(dbURI)
-
 	dbConn := postgres.NewPostgresConn(dbURI)
 	defer dbConn.Close()
 
@@ -41,6 +39,5 @@ func main() {
 
 	// queryLog := bundebug.NewQueryHook(bundebug.WithVerbose(true))
 	// db.AddQueryHook(queryLog)
-	fmt.Print("Connected to DB")
 	controller.EmployeeApi(db, v)
 }
