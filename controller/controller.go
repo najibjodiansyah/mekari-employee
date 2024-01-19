@@ -22,20 +22,15 @@ type EmployeeController interface {
 func NewEmployeeController(employeeService service.EmployeeService, validator *validator.Validate) EmployeeController {
 	return &EmployeeControllerImpl{
 		UserService: employeeService,
-		Validate:    validator,
 	}
 }
 
-func EmployeeApi(db *bun.DB, v *validator.Validate) {
-	repo := repository.NewEmployeeRepository(db)
-	service := service.NewEmployeeService(repo)
-	controller := NewEmployeeController(service, v)
+func RegisterApp(controller EmployeeController) *fiber.App {
 	app := fiber.New(
 		fiber.Config{
 			Prefork: true,
 		},
 	)
-
 	app.Use(
 		logger.New(logger.Config{
 			Format: "${pid} ${locals:requestid} [${ip}]:${port} ${status} - ${method} ${path}​\n",
@@ -56,6 +51,17 @@ func EmployeeApi(db *bun.DB, v *validator.Validate) {
 	userRoute.Get("/:id", controller.GetById)
 	userRoute.Put("/:id", controller.Put)
 	userRoute.Delete("/:id", controller.Delete)
+
+	return app
+}
+
+func EmployeeApi(db *bun.DB) {
+	v := validator.New()
+	repo := repository.NewEmployeeRepository(db)
+	service := service.NewEmployeeService(repo)
+	controller := NewEmployeeController(service, v)
+
+	app := RegisterApp(controller)
 
 	log.Fatal(app.Listen(":3000"))
 }
