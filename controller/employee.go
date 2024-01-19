@@ -17,7 +17,7 @@ type EmployeeControllerImpl struct {
 }
 
 func (uc *EmployeeControllerImpl) Get(c *fiber.Ctx) error {
-	users, err := uc.UserService.Find()
+	users, err := uc.UserService.Find(c.Context())
 	if err != nil {
 		if err.Error() == model.ErrorNotFound {
 			return c.Status(404).JSON(&fiber.Map{
@@ -48,7 +48,7 @@ func (uc *EmployeeControllerImpl) Post(c *fiber.Ctx) error {
 			"message": model.ErrorBadRequest + err.Error(),
 		})
 	}
-	err := uc.UserService.Create(user)
+	err := uc.UserService.Create(c.Context(), user)
 	if err != nil {
 		if err.Error() == "HireDate format must be RFC3339" {
 			return c.Status(400).JSON(&fiber.Map{
@@ -72,7 +72,7 @@ func (uc *EmployeeControllerImpl) GetById(c *fiber.Ctx) error {
 			"message": model.ErrorBadRequest + err.Error(),
 		})
 	}
-	user, err := uc.UserService.FindById(id)
+	user, err := uc.UserService.FindById(c.Context(), id)
 	if err != nil {
 		if err.Error() == model.ErrorNotFound {
 			return c.Status(404).JSON(&fiber.Map{
@@ -110,7 +110,7 @@ func (uc *EmployeeControllerImpl) Put(c *fiber.Ctx) error {
 			"message": model.ErrorBadRequest + err.Error(),
 		})
 	}
-	err = uc.UserService.Update(id, user)
+	err = uc.UserService.Update(c.Context(), id, user)
 	if err != nil {
 		if err.Error() == "HireDate format must be RFC3339" {
 			return c.Status(400).JSON(&fiber.Map{
@@ -139,7 +139,7 @@ func (uc *EmployeeControllerImpl) Delete(c *fiber.Ctx) error {
 			"message": model.ErrorBadRequest + err.Error(),
 		})
 	}
-	err = uc.UserService.Delete(id)
+	err = uc.UserService.Delete(c.Context(), id)
 	if err != nil {
 		if err.Error() == model.ErrorNotFound {
 			return c.Status(404).JSON(&fiber.Map{

@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"errors"
 
 	"github.com/najibjodiansyah/mekari-employee/model/domain"
@@ -8,11 +9,11 @@ import (
 )
 
 type EmployeeService interface {
-	Find() ([]*domain.Employee, error)
-	FindById(id int) (*domain.Employee, error)
-	Create(empCreate *domain.Employee) error
-	Update(id int, empUpdate domain.Employee) error
-	Delete(id int) error
+	Find(ctx context.Context) ([]*domain.Employee, error)
+	FindById(ctx context.Context, id int) (*domain.Employee, error)
+	Create(ctx context.Context, mpCreate *domain.Employee) error
+	Update(ctx context.Context, id int, empUpdate domain.Employee) error
+	Delete(ctx context.Context, id int) error
 }
 
 type EmployeeServiceImpl struct {
@@ -25,37 +26,37 @@ func NewEmployeeService(employeeRepo repository.EmployeeRepository) EmployeeServ
 	}
 }
 
-func (u *EmployeeServiceImpl) Find() ([]*domain.Employee, error) {
-	employees, err := u.employeeRepo.SelectAll()
+func (u *EmployeeServiceImpl) Find(ctx context.Context) ([]*domain.Employee, error) {
+	employees, err := u.employeeRepo.SelectAll(ctx)
 	if err != nil {
 		return nil, err
 	}
 	return employees, nil
 }
 
-func (u *EmployeeServiceImpl) FindById(id int) (*domain.Employee, error) {
-	employee, err := u.employeeRepo.SelectById(id)
+func (u *EmployeeServiceImpl) FindById(ctx context.Context, id int) (*domain.Employee, error) {
+	employee, err := u.employeeRepo.SelectById(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 	return employee, nil
 }
 
-func (u *EmployeeServiceImpl) Create(empCreate *domain.Employee) error {
+func (u *EmployeeServiceImpl) Create(ctx context.Context, empCreate *domain.Employee) error {
 	if empCreate.HireDate != nil {
 		if !empCreate.ParseRFC3339(*empCreate.HireDate) {
 			return errors.New("HireDate format must be RFC3339")
 		}
 	}
-	err := u.employeeRepo.Insert(empCreate)
+	err := u.employeeRepo.Insert(ctx, empCreate)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (u *EmployeeServiceImpl) Update(id int, empUpdate domain.Employee) error {
-	employee, err := u.employeeRepo.SelectById(id)
+func (u *EmployeeServiceImpl) Update(ctx context.Context, id int, empUpdate domain.Employee) error {
+	employee, err := u.employeeRepo.SelectById(ctx, id)
 	if err != nil {
 		return err
 	}
@@ -79,19 +80,19 @@ func (u *EmployeeServiceImpl) Update(id int, empUpdate domain.Employee) error {
 		employee.HireDate = empUpdate.HireDate
 	}
 
-	err = u.employeeRepo.Update(employee)
+	err = u.employeeRepo.Update(ctx, employee)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (u *EmployeeServiceImpl) Delete(id int) error {
-	_, err := u.employeeRepo.SelectById(id)
+func (u *EmployeeServiceImpl) Delete(ctx context.Context, id int) error {
+	_, err := u.employeeRepo.SelectById(ctx, id)
 	if err != nil {
 		return err
 	}
-	err = u.employeeRepo.Delete(id)
+	err = u.employeeRepo.Delete(ctx, id)
 	if err != nil {
 		return err
 	}
