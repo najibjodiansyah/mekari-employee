@@ -1,9 +1,9 @@
 package domain
 
 import (
-	"fmt"
 	"time"
 
+	"github.com/gofiber/fiber/v2/log"
 	"github.com/uptrace/bun"
 )
 
@@ -21,7 +21,7 @@ func (e *Employee) ParseRFC3339(value string) bool {
 	format := "2006-01-02 15:04:05"
 	_, err := time.Parse(format, value)
 	if err != nil {
-		fmt.Print(err)
+		log.Error(err)
 		return false
 	} else {
 		return true

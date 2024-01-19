@@ -17,3 +17,6 @@ migrate-status:
 migrate-revision:
 	@echo "Migrating revision database..."
 	@migrate create -ext sql -dir migrations -seq $(name)
+
+create-mock:
+	mockgen -source $(from) -destination tests/mocks/$(destination)
