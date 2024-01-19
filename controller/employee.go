@@ -4,8 +4,8 @@ import (
 	"strconv"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/najibjodiansyah/mekari-employee/model"
 	"github.com/najibjodiansyah/mekari-employee/model/domain"
-	"github.com/najibjodiansyah/mekari-employee/model/web"
 	"github.com/najibjodiansyah/mekari-employee/service"
 
 	"github.com/gofiber/fiber/v2"
@@ -19,7 +19,7 @@ type EmployeeControllerImpl struct {
 func (uc *EmployeeControllerImpl) Get(c *fiber.Ctx) error {
 	users, err := uc.UserService.Find()
 	if err != nil {
-		if err.Error() == web.ErrorNotFound {
+		if err.Error() == model.ErrorNotFound {
 			return c.Status(404).JSON(&fiber.Map{
 				"message": err.Error(),
 				"data":    users,
@@ -31,7 +31,7 @@ func (uc *EmployeeControllerImpl) Get(c *fiber.Ctx) error {
 		})
 	}
 	return c.JSON(&fiber.Map{
-		"message": web.Success,
+		"message": model.Success,
 		"data":    users,
 	})
 }
@@ -40,12 +40,12 @@ func (uc *EmployeeControllerImpl) Post(c *fiber.Ctx) error {
 	var user *domain.Employee
 	if err := c.BodyParser(&user); err != nil {
 		return c.Status(400).JSON(&fiber.Map{
-			"message": web.ErrorUnprocessableEntity + err.Error(),
+			"message": model.ErrorUnprocessableEntity + err.Error(),
 		})
 	}
 	if err := uc.Validate.Struct(user); err != nil {
 		return c.Status(400).JSON(&fiber.Map{
-			"message": web.ErrorBadRequest + err.Error(),
+			"message": model.ErrorBadRequest + err.Error(),
 		})
 	}
 	err := uc.UserService.Create(user)
@@ -56,11 +56,11 @@ func (uc *EmployeeControllerImpl) Post(c *fiber.Ctx) error {
 			})
 		}
 		return c.Status(500).JSON(&fiber.Map{
-			"message": web.ErrorInternal + err.Error(),
+			"message": model.ErrorInternal + err.Error(),
 		})
 	}
 	return c.Status(201).JSON(&fiber.Map{
-		"message": web.Created,
+		"message": model.Created,
 	})
 }
 
@@ -69,24 +69,24 @@ func (uc *EmployeeControllerImpl) GetById(c *fiber.Ctx) error {
 	id, err := strconv.Atoi(paramId)
 	if err != nil {
 		return c.Status(400).JSON(&fiber.Map{
-			"message": web.ErrorBadRequest + err.Error(),
+			"message": model.ErrorBadRequest + err.Error(),
 		})
 	}
 	user, err := uc.UserService.FindById(id)
 	if err != nil {
-		if err.Error() == web.ErrorNotFound {
+		if err.Error() == model.ErrorNotFound {
 			return c.Status(404).JSON(&fiber.Map{
 				"message": err.Error(),
 				"data":    user,
 			})
 		}
 		return c.Status(500).JSON(&fiber.Map{
-			"message": web.ErrorInternal + err.Error(),
+			"message": model.ErrorInternal + err.Error(),
 			"data":    user,
 		})
 	}
 	return c.JSON(&fiber.Map{
-		"message": web.Success,
+		"message": model.Success,
 		"data":    user,
 	})
 }
@@ -96,18 +96,18 @@ func (uc *EmployeeControllerImpl) Put(c *fiber.Ctx) error {
 	id, err := strconv.Atoi(paramId)
 	if err != nil {
 		return c.Status(400).JSON(&fiber.Map{
-			"message": web.ErrorBadRequest + err.Error(),
+			"message": model.ErrorBadRequest + err.Error(),
 		})
 	}
 	var user domain.Employee
 	if err := c.BodyParser(&user); err != nil {
 		return c.Status(400).JSON(&fiber.Map{
-			"message": web.ErrorUnprocessableEntity + err.Error(),
+			"message": model.ErrorUnprocessableEntity + err.Error(),
 		})
 	}
 	if err := uc.Validate.Struct(user); err != nil {
 		return c.Status(400).JSON(&fiber.Map{
-			"message": web.ErrorBadRequest + err.Error(),
+			"message": model.ErrorBadRequest + err.Error(),
 		})
 	}
 	err = uc.UserService.Update(id, user)
@@ -117,17 +117,17 @@ func (uc *EmployeeControllerImpl) Put(c *fiber.Ctx) error {
 				"message": err.Error(),
 			})
 		}
-		if err.Error() == web.ErrorNotFound {
+		if err.Error() == model.ErrorNotFound {
 			return c.Status(404).JSON(&fiber.Map{
 				"message": err.Error(),
 			})
 		}
 		return c.Status(500).JSON(&fiber.Map{
-			"message": web.ErrorInternal + err.Error(),
+			"message": model.ErrorInternal + err.Error(),
 		})
 	}
 	return c.Status(200).JSON(&fiber.Map{
-		"message": web.Updated,
+		"message": model.Updated,
 	})
 }
 
@@ -136,21 +136,21 @@ func (uc *EmployeeControllerImpl) Delete(c *fiber.Ctx) error {
 	id, err := strconv.Atoi(paramId)
 	if err != nil {
 		return c.Status(400).JSON(&fiber.Map{
-			"message": web.ErrorBadRequest + err.Error(),
+			"message": model.ErrorBadRequest + err.Error(),
 		})
 	}
 	err = uc.UserService.Delete(id)
 	if err != nil {
-		if err.Error() == web.ErrorNotFound {
+		if err.Error() == model.ErrorNotFound {
 			return c.Status(404).JSON(&fiber.Map{
 				"message": err.Error(),
 			})
 		}
 		return c.Status(500).JSON(&fiber.Map{
-			"message": web.ErrorInternal + err.Error(),
+			"message": model.ErrorInternal + err.Error(),
 		})
 	}
 	return c.Status(200).JSON(&fiber.Map{
-		"message": web.Deleted,
+		"message": model.Deleted,
 	})
 }

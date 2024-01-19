@@ -1,18 +1,14 @@
 package controller
 
 import (
-	"context"
 	"log"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
-	"github.com/najibjodiansyah/mekari-employee/pkg/postgres"
 	"github.com/najibjodiansyah/mekari-employee/repository"
 	"github.com/najibjodiansyah/mekari-employee/service"
 	"github.com/uptrace/bun"
-	"github.com/uptrace/bun/dialect/pgdialect"
-	"github.com/uptrace/bun/extra/bunotel"
 )
 
 type EmployeeController interface {
@@ -30,18 +26,7 @@ func NewEmployeeController(employeeService service.EmployeeService, validator *v
 	}
 }
 
-func EmployeeApi() {
-	ctx := context.Background()
-	dbConn := postgres.NewPostgresConn("postgres://postgres:mysecret@postgres:5432/mekari_employee?sslmode=disable")
-	defer dbConn.Close()
-
-	if err := dbConn.PingContext(ctx); err != nil {
-		log.Fatalf("Error connecting to DB: %v", err)
-	}
-
-	v := validator.New()
-	db := bun.NewDB(dbConn, pgdialect.New())
-	db.AddQueryHook(bunotel.NewQueryHook(bunotel.WithDBName("mekari_employee")))
+func EmployeeApi(db *bun.DB, v *validator.Validate) {
 	repo := repository.NewEmployeeRepository(db)
 	service := service.NewEmployeeService(repo)
 	controller := NewEmployeeController(service, v)
@@ -50,9 +35,6 @@ func EmployeeApi() {
 			Prefork: true,
 		},
 	)
-
-	// queryLog := bundebug.NewQueryHook(bundebug.WithVerbose(true))
-	// db.AddQueryHook(queryLog)
 
 	app.Use(
 		logger.New(logger.Config{
@@ -67,6 +49,7 @@ func EmployeeApi() {
 			c.Set("Content-Type", "application/json")
 			return c.Next()
 		})
+
 	userRoute := app.Group("/v1/employees")
 	userRoute.Get("/", controller.Get)
 	userRoute.Post("/", controller.Post)

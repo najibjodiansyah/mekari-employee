@@ -1,4 +1,4 @@
-package web
+package model
 
 const (
 	ErrorNotFound            = "no employee data found"
@@ -17,3 +17,18 @@ const (
 	ErrorUpdateData   = "error update data"
 	ErrorDeleteData   = "error delete data"
 )
+
+type CreateEmployeeRequest struct {
+	FirstName string  `json:"first_name" validate:"required"`
+	LastName  string  `json:"last_name" validate:"required"`
+	Email     string  `json:"email" validate:"required,email"`
+	HireDate  *string `json:"hire_date"`
+}
+
+type UpdateEmployeeRequest struct {
+	Id        int     `json:"id"`
+	FirstName string  `json:"first_name"`
+	LastName  string  `json:"last_name"`
+	Email     string  `json:"email"`
+	HireDate  *string `json:"hire_date"`
+}

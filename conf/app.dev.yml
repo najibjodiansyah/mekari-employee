@@ -1,5 +1,6 @@
 postgres:
-  database: mekari-employee
+  database: mekari_employee
   username: postgres
   password: mysecret
   host: postgres
+  port: "5432"
