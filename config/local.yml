@@ -1,0 +1,5 @@
+postgres:
+  database: mekari-employee
+  username: postgres
+  password: mysecret
+  host: postgres

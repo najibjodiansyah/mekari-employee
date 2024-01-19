@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+
+  #postgres Service
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    restart: unless-stopped
+    tty: true
+    ports:
+      - 5433:5432
+    environment:
+      POSTGRES_PASSWORD: mysecret
+      POSTGRES_DB: mekari_employee
+
+  api:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./:/app
+    ports:
+      - 3000:3000 # API server
+    depends_on:
+      - postgres
+    environment: # pass through environments for build / test purposes
+      - MKR_ENV:"dev"
+    tty: true
+    links:
+      - postgres
+    networks:
+      default:
+        priority: 1
+      services:
+        aliases:
+          - mekari-employee
+
+#Docker Networks
+networks:
+  services:
+    driver: bridge
