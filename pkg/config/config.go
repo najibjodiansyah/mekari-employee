@@ -9,7 +9,7 @@ import (
 )
 
 var Config config
-var Environment string = "dev"
+var Environment string = "local"
 
 type config struct {
 	PgCfg struct {
@@ -33,7 +33,7 @@ func init() {
 		Environment = viper.GetString("ENV")
 	}
 
-	if Environment != "production" {
+	if Environment != "production" && Environment != "dev" || Environment != "test" {
 		configName = configName + "." + Environment
 	}
 
@@ -44,7 +44,7 @@ func init() {
 	viper.AddConfigPath(".")   // optionally look for config in the working directory
 	err = viper.ReadInConfig() // Find and read the config file
 	if err != nil {            // Handle errors reading the config file
-		panic(fmt.Errorf("Fatal error config file: %s", err))
+		panic(fmt.Errorf("fatal error config file: %s", err))
 	}
 
 	//Unmarshal application yml to config
@@ -57,7 +57,7 @@ func init() {
 
 func GetAppBasePath() string {
 	basePath, _ := filepath.Abs(".")
-	for filepath.Base(basePath) != "app" {
+	for filepath.Base(basePath) != "mekari-employee" {
 		basePath = filepath.Dir(basePath)
 	}
 	return basePath

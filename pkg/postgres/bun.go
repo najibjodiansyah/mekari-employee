@@ -13,13 +13,7 @@ import (
 	"github.com/uptrace/bun/extra/bunotel"
 )
 
-func newPostgresConn(databaseURL string) *sql.DB {
-	sqldb := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(databaseURL)))
-
-	return sqldb
-}
-
-func DB() *bun.DB {
+func DB() (*bun.DB, *sql.DB) {
 	ctx := context.Background()
 
 	dbURI := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable",
@@ -30,8 +24,7 @@ func DB() *bun.DB {
 		config.Config.PgCfg.Database,
 	)
 
-	dbConn := newPostgresConn(dbURI)
-	defer dbConn.Close()
+	dbConn := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(dbURI)))
 
 	if err := dbConn.PingContext(ctx); err != nil {
 		log.Fatalf("Error connecting to DB: %v", err)
@@ -43,5 +36,5 @@ func DB() *bun.DB {
 	// queryLog := bundebug.NewQueryHook(bundebug.WithVerbose(true))
 	// db.AddQueryHook(queryLog)
 
-	return db
+	return db, dbConn
 }

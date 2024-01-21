@@ -6,9 +6,9 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/najibjodiansyah/mekari-employee/pkg/postgres"
 	"github.com/najibjodiansyah/mekari-employee/repository"
 	"github.com/najibjodiansyah/mekari-employee/service"
-	"github.com/uptrace/bun"
 )
 
 type EmployeeController interface {
@@ -22,6 +22,7 @@ type EmployeeController interface {
 func NewEmployeeController(employeeService service.EmployeeService, validator *validator.Validate) EmployeeController {
 	return &EmployeeControllerImpl{
 		UserService: employeeService,
+		Validate:    validator,
 	}
 }
 
@@ -55,9 +56,11 @@ func RegisterApp(controller EmployeeController) *fiber.App {
 	return app
 }
 
-func EmployeeApi(db *bun.DB) {
+func EmployeeApi() {
+	bun, dbconn := postgres.DB()
+	defer dbconn.Close()
 	v := validator.New()
-	repo := repository.NewEmployeeRepository(db)
+	repo := repository.NewEmployeeRepository(bun)
 	service := service.NewEmployeeService(repo)
 	controller := NewEmployeeController(service, v)
 

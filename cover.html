@@ -1,0 +1,470 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>controller: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">github.com/najibjodiansyah/mekari-employee/controller/controller.go (63.6%)</option>
+				
+				<option value="file1">github.com/najibjodiansyah/mekari-employee/controller/employee.go (64.8%)</option>
+				
+				<option value="file2">github.com/najibjodiansyah/mekari-employee/model/domain/employee.go (100.0%)</option>
+				
+				<option value="file3">github.com/najibjodiansyah/mekari-employee/service/employee.go (56.1%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package controller
+
+import (
+        "log"
+
+        "github.com/go-playground/validator/v10"
+        "github.com/gofiber/fiber/v2"
+        "github.com/gofiber/fiber/v2/middleware/logger"
+        "github.com/najibjodiansyah/mekari-employee/pkg/postgres"
+        "github.com/najibjodiansyah/mekari-employee/repository"
+        "github.com/najibjodiansyah/mekari-employee/service"
+)
+
+type EmployeeController interface {
+        Get(c *fiber.Ctx) error
+        Post(c *fiber.Ctx) error
+        GetById(c *fiber.Ctx) error
+        Put(c *fiber.Ctx) error
+        Delete(c *fiber.Ctx) error
+}
+
+func NewEmployeeController(employeeService service.EmployeeService, validator *validator.Validate) EmployeeController <span class="cov8" title="1">{
+        return &amp;EmployeeControllerImpl{
+                UserService: employeeService,
+                Validate:    validator,
+        }
+}</span>
+
+func RegisterApp(controller EmployeeController) *fiber.App <span class="cov8" title="1">{
+        app := fiber.New(
+                fiber.Config{
+                        Prefork: true,
+                },
+        )
+        app.Use(
+                logger.New(logger.Config{
+                        Format: "${pid} ${locals:requestid} [${ip}]:${port} ${status} - ${method} ${path}​\n",
+                }),
+                func(c *fiber.Ctx) error </span><span class="cov8" title="1">{
+                        if c.Get("apikey") != "MK421" </span><span class="cov8" title="1">{
+                                return c.Status(401).JSON(&amp;fiber.Map{
+                                        "message": "Unauthorized",
+                                })
+                        }</span>
+                        <span class="cov8" title="1">c.Set("Content-Type", "application/json")
+                        return c.Next()</span>
+                })
+
+        <span class="cov8" title="1">userRoute := app.Group("/v1/employees")
+        userRoute.Get("/", controller.Get)
+        userRoute.Post("/", controller.Post)
+        userRoute.Get("/:id", controller.GetById)
+        userRoute.Put("/:id", controller.Put)
+        userRoute.Delete("/:id", controller.Delete)
+
+        return app</span>
+}
+
+func EmployeeApi() <span class="cov0" title="0">{
+        bun, dbconn := postgres.DB()
+        defer dbconn.Close()
+        v := validator.New()
+        repo := repository.NewEmployeeRepository(bun)
+        service := service.NewEmployeeService(repo)
+        controller := NewEmployeeController(service, v)
+
+        app := RegisterApp(controller)
+
+        log.Fatal(app.Listen(":3000"))
+}</span>
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package controller
+
+import (
+        "strconv"
+
+        "github.com/go-playground/validator/v10"
+        "github.com/najibjodiansyah/mekari-employee/model"
+        "github.com/najibjodiansyah/mekari-employee/model/domain"
+        "github.com/najibjodiansyah/mekari-employee/service"
+
+        "github.com/gofiber/fiber/v2"
+)
+
+type EmployeeControllerImpl struct {
+        UserService service.EmployeeService
+        Validate    *validator.Validate
+}
+
+func (uc *EmployeeControllerImpl) Get(c *fiber.Ctx) error <span class="cov8" title="1">{
+        users, err := uc.UserService.Find(c.Context())
+        if err != nil </span><span class="cov8" title="1">{
+                if err.Error() == model.ErrorNotFound </span><span class="cov0" title="0">{
+                        return c.Status(404).JSON(&amp;fiber.Map{
+                                "message": err.Error(),
+                                "data":    users,
+                        })
+                }</span>
+                <span class="cov8" title="1">return c.Status(500).JSON(&amp;fiber.Map{
+                        "message": err.Error(),
+                        "data":    users,
+                })</span>
+        }
+        <span class="cov8" title="1">return c.JSON(&amp;fiber.Map{
+                "message": model.Success,
+                "data":    users,
+        })</span>
+}
+
+func (uc *EmployeeControllerImpl) Post(c *fiber.Ctx) error <span class="cov8" title="1">{
+        var user *domain.Employee
+        if err := c.BodyParser(&amp;user); err != nil </span><span class="cov8" title="1">{
+                return c.Status(400).JSON(&amp;fiber.Map{
+                        "message": model.ErrorUnprocessableEntity + err.Error(),
+                })
+        }</span>
+        <span class="cov8" title="1">if err := uc.Validate.Struct(user); err != nil </span><span class="cov8" title="1">{
+                return c.Status(400).JSON(&amp;fiber.Map{
+                        "message": model.ErrorBadRequest + err.Error(),
+                })
+        }</span>
+        <span class="cov8" title="1">err := uc.UserService.Create(c.Context(), user)
+        if err != nil </span><span class="cov8" title="1">{
+                if err.Error() == "HireDate format must be RFC3339" </span><span class="cov8" title="1">{
+                        return c.Status(400).JSON(&amp;fiber.Map{
+                                "message": err.Error(),
+                        })
+                }</span>
+                <span class="cov0" title="0">return c.Status(500).JSON(&amp;fiber.Map{
+                        "message": model.ErrorInternal + err.Error(),
+                })</span>
+        }
+        <span class="cov8" title="1">return c.Status(201).JSON(&amp;fiber.Map{
+                "message": model.Created,
+        })</span>
+}
+
+func (uc *EmployeeControllerImpl) GetById(c *fiber.Ctx) error <span class="cov8" title="1">{
+        paramId := c.Params("id")
+        id, err := strconv.Atoi(paramId)
+        if err != nil </span><span class="cov8" title="1">{
+                return c.Status(400).JSON(&amp;fiber.Map{
+                        "message": model.ErrorBadRequest + err.Error(),
+                })
+        }</span>
+        <span class="cov8" title="1">user, err := uc.UserService.FindById(c.Context(), id)
+        if err != nil </span><span class="cov8" title="1">{
+                if err.Error() == model.ErrorNotFound </span><span class="cov8" title="1">{
+                        return c.Status(404).JSON(&amp;fiber.Map{
+                                "message": err.Error(),
+                                "data":    user,
+                        })
+                }</span>
+                <span class="cov8" title="1">return c.Status(500).JSON(&amp;fiber.Map{
+                        "message": model.ErrorInternal + err.Error(),
+                        "data":    user,
+                })</span>
+        }
+        <span class="cov8" title="1">return c.JSON(&amp;fiber.Map{
+                "message": model.Success,
+                "data":    user,
+        })</span>
+}
+
+func (uc *EmployeeControllerImpl) Put(c *fiber.Ctx) error <span class="cov0" title="0">{
+        paramId := c.Params("id")
+        id, err := strconv.Atoi(paramId)
+        if err != nil </span><span class="cov0" title="0">{
+                return c.Status(400).JSON(&amp;fiber.Map{
+                        "message": model.ErrorBadRequest + err.Error(),
+                })
+        }</span>
+        <span class="cov0" title="0">var user domain.Employee
+        if err := c.BodyParser(&amp;user); err != nil </span><span class="cov0" title="0">{
+                return c.Status(400).JSON(&amp;fiber.Map{
+                        "message": model.ErrorUnprocessableEntity + err.Error(),
+                })
+        }</span>
+        <span class="cov0" title="0">if err := uc.Validate.Struct(&amp;user); err != nil </span><span class="cov0" title="0">{
+                return c.Status(400).JSON(&amp;fiber.Map{
+                        "message": model.ErrorBadRequest + err.Error(),
+                })
+        }</span>
+        <span class="cov0" title="0">err = uc.UserService.Update(c.Context(), id, user)
+        if err != nil </span><span class="cov0" title="0">{
+                if err.Error() == "HireDate format must be RFC3339" </span><span class="cov0" title="0">{
+                        return c.Status(400).JSON(&amp;fiber.Map{
+                                "message": err.Error(),
+                        })
+                }</span>
+                <span class="cov0" title="0">if err.Error() == model.ErrorNotFound </span><span class="cov0" title="0">{
+                        return c.Status(404).JSON(&amp;fiber.Map{
+                                "message": err.Error(),
+                        })
+                }</span>
+                <span class="cov0" title="0">return c.Status(500).JSON(&amp;fiber.Map{
+                        "message": model.ErrorInternal + err.Error(),
+                })</span>
+        }
+        <span class="cov0" title="0">return c.Status(200).JSON(&amp;fiber.Map{
+                "message": model.Updated,
+        })</span>
+}
+
+func (uc *EmployeeControllerImpl) Delete(c *fiber.Ctx) error <span class="cov8" title="1">{
+        paramId := c.Params("id")
+        id, err := strconv.Atoi(paramId)
+        if err != nil </span><span class="cov8" title="1">{
+                return c.Status(400).JSON(&amp;fiber.Map{
+                        "message": model.ErrorBadRequest + err.Error(),
+                })
+        }</span>
+        <span class="cov8" title="1">err = uc.UserService.Delete(c.Context(), id)
+        if err != nil </span><span class="cov8" title="1">{
+                if err.Error() == model.ErrorNotFound </span><span class="cov8" title="1">{
+                        return c.Status(404).JSON(&amp;fiber.Map{
+                                "message": err.Error(),
+                        })
+                }</span>
+                <span class="cov8" title="1">return c.Status(500).JSON(&amp;fiber.Map{
+                        "message": model.ErrorInternal + err.Error(),
+                })</span>
+        }
+        <span class="cov8" title="1">return c.Status(200).JSON(&amp;fiber.Map{
+                "message": model.Deleted,
+        })</span>
+}
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">package domain
+
+import (
+        "time"
+
+        "github.com/gofiber/fiber/v2/log"
+        "github.com/uptrace/bun"
+)
+
+type Employee struct {
+        bun.BaseModel `bun:"table:employees,alias:e"`
+
+        Id        int     `bun:"id,pk,autoincrement" json:"id"`
+        FirstName string  `bun:"first_name" json:"first_name" validate:"required"`
+        LastName  string  `bun:"last_name" json:"last_name" validate:"required"`
+        Email     string  `bun:"email" json:"email" validate:"required,email"`
+        HireDate  *string `bun:"hire_date" json:"hire_date"`
+}
+
+func (e *Employee) ParseRFC3339(value string) bool <span class="cov8" title="1">{
+        format := "2006-01-02 15:04:05"
+        _, err := time.Parse(format, value)
+        if err != nil </span><span class="cov8" title="1">{
+                log.Error(err)
+                return false
+        }</span> else<span class="cov8" title="1"> {
+                return true
+        }</span>
+}
+</pre>
+		
+		<pre class="file" id="file3" style="display: none">package service
+
+import (
+        "context"
+        "errors"
+
+        "github.com/najibjodiansyah/mekari-employee/model/domain"
+        "github.com/najibjodiansyah/mekari-employee/repository"
+)
+
+type EmployeeService interface {
+        Find(ctx context.Context) ([]*domain.Employee, error)
+        FindById(ctx context.Context, id int) (*domain.Employee, error)
+        Create(ctx context.Context, mpCreate *domain.Employee) error
+        Update(ctx context.Context, id int, empUpdate domain.Employee) error
+        Delete(ctx context.Context, id int) error
+}
+
+type EmployeeServiceImpl struct {
+        employeeRepo repository.EmployeeRepository
+}
+
+func NewEmployeeService(employeeRepo repository.EmployeeRepository) EmployeeService <span class="cov8" title="1">{
+        return &amp;EmployeeServiceImpl{
+                employeeRepo: employeeRepo,
+        }
+}</span>
+
+func (u *EmployeeServiceImpl) Find(ctx context.Context) ([]*domain.Employee, error) <span class="cov8" title="1">{
+        employees, err := u.employeeRepo.SelectAll(ctx)
+        if err != nil </span><span class="cov8" title="1">{
+                return nil, err
+        }</span>
+        <span class="cov8" title="1">return employees, nil</span>
+}
+
+func (u *EmployeeServiceImpl) FindById(ctx context.Context, id int) (*domain.Employee, error) <span class="cov8" title="1">{
+        employee, err := u.employeeRepo.SelectById(ctx, id)
+        if err != nil </span><span class="cov8" title="1">{
+                return nil, err
+        }</span>
+        <span class="cov8" title="1">return employee, nil</span>
+}
+
+func (u *EmployeeServiceImpl) Create(ctx context.Context, empCreate *domain.Employee) error <span class="cov8" title="1">{
+        if empCreate.HireDate != nil </span><span class="cov8" title="1">{
+                if !empCreate.ParseRFC3339(*empCreate.HireDate) </span><span class="cov8" title="1">{
+                        return errors.New("HireDate format must be RFC3339")
+                }</span>
+        }
+        <span class="cov8" title="1">err := u.employeeRepo.Insert(ctx, empCreate)
+        if err != nil </span><span class="cov8" title="1">{
+                return err
+        }</span>
+        <span class="cov8" title="1">return nil</span>
+}
+
+func (u *EmployeeServiceImpl) Update(ctx context.Context, id int, empUpdate domain.Employee) error <span class="cov0" title="0">{
+        employee, err := u.employeeRepo.SelectById(ctx, id)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        // check datetime format RFC3339
+        <span class="cov0" title="0">if empUpdate.HireDate != nil </span><span class="cov0" title="0">{
+                if !employee.ParseRFC3339(*empUpdate.HireDate) </span><span class="cov0" title="0">{
+                        return errors.New("HireDate format must be RFC3339")
+                }</span>
+        }
+        <span class="cov0" title="0">if empUpdate.FirstName != "" </span><span class="cov0" title="0">{
+                employee.FirstName = empUpdate.FirstName
+        }</span>
+        <span class="cov0" title="0">if empUpdate.LastName != "" </span><span class="cov0" title="0">{
+                employee.LastName = empUpdate.LastName
+        }</span>
+        <span class="cov0" title="0">if empUpdate.Email != "" </span><span class="cov0" title="0">{
+                employee.Email = empUpdate.Email
+        }</span>
+        <span class="cov0" title="0">if empUpdate.HireDate != nil </span><span class="cov0" title="0">{
+                employee.HireDate = empUpdate.HireDate
+        }</span>
+
+        <span class="cov0" title="0">err = u.employeeRepo.Update(ctx, employee)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        <span class="cov0" title="0">return nil</span>
+}
+
+func (u *EmployeeServiceImpl) Delete(ctx context.Context, id int) error <span class="cov8" title="1">{
+        _, err := u.employeeRepo.SelectById(ctx, id)
+        if err != nil </span><span class="cov8" title="1">{
+                return err
+        }</span>
+        <span class="cov8" title="1">err = u.employeeRepo.Delete(ctx, id)
+        if err != nil </span><span class="cov8" title="1">{
+                return err
+        }</span>
+        <span class="cov8" title="1">return nil</span>
+}
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>

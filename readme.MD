@@ -18,3 +18,12 @@
 4. Run go install --tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
 5. Run make migrate-up
 6. Run `go run main.go`
+
+## test env
+Create database `mekari_employee_test`
+1. Run env MKR_ENV=test
+2. Run go test ./...
+3. Run go test -coverprofile=coverage.out ./...
+4. Run go tool cover -html=coverage.out -o cover.html
+5. Run go tool cover -func coverage.out
+6. Run go test -v -coverpkg=./... -coverprofile=profile.cov ./...
