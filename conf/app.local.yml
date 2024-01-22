@@ -1,0 +1,6 @@
+postgres:
+  database: mekari_employee
+  username: postgres
+  password: 
+  host: localhost
+  port: "5432"

@@ -19,13 +19,13 @@ services:
       context: .
       dockerfile: Dockerfile
     volumes:
-      - ./:/app
+      - .:/go/src/mekari-employee
     ports:
       - 3000:3000 # API server
     depends_on:
       - postgres
     environment: # pass through environments for build / test purposes
-      - MKR_ENV:"dev"
+      MKR_ENV: dev
     tty: true
     links:
       - postgres

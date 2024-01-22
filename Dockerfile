@@ -7,9 +7,9 @@ ENV PROJECT_DIR=/app \
     CGO_ENABLED=0
 
 # Basic setup of the container
-RUN mkdir /app
-COPY .. /app
-WORKDIR /app
+RUN mkdir /go/src/mekari-employee
+COPY .. /go/src/mekari-employee
+WORKDIR /go/src/mekari-employee
 
 # Get Dependancies
 RUN go mod download

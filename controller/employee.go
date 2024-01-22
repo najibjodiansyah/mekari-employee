@@ -105,7 +105,7 @@ func (uc *EmployeeControllerImpl) Put(c *fiber.Ctx) error {
 			"message": model.ErrorUnprocessableEntity + err.Error(),
 		})
 	}
-	if err := uc.Validate.Struct(user); err != nil {
+	if err := uc.Validate.Struct(&user); err != nil {
 		return c.Status(400).JSON(&fiber.Map{
 			"message": model.ErrorBadRequest + err.Error(),
 		})
