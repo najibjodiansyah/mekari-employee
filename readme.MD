@@ -10,6 +10,7 @@
 ## Set up Postgres in docker
 1. Run `docker-compose exec api sh`
 2. Run `migrate -path migrations -database "postgres://postgres:@localhost:5432/mekari_employee?sslmode=disable" -verbose up`
+3. Run go test ./...
 
 ## set up locally
 1. Install postgres
